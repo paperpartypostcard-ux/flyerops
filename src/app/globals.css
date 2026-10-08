@@ -44,6 +44,7 @@ h1 { @apply tracking-tight; }
 
 /* Page title used across staff screens */
 .page-title { @apply text-2xl font-bold tracking-tight text-ink; }
+.page-sub { @apply mt-1 max-w-2xl text-sm text-muted; }
 }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

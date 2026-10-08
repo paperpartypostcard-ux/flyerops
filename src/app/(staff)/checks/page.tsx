@@ -1,5 +1,7 @@
 import { supabaseServer, requireUser } from '@/lib/supabase/server';
 import CheckForm from './CheckForm';
+import Hint from '@/components/Hint';
+
 import { getI18n } from '@/lib/i18n/server';
 
 export default async function Checks() {
@@ -17,7 +19,7 @@ export default async function Checks() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
-      <h1 className="page-title">{t('checks.title')}</h1>
+      <div><h1 className="page-title">{t('checks.title')}</h1><p className="page-sub">{t('help.checks.page')}</p></div>
 
       <CheckForm walkers={(walkers ?? []).map((w) => ({ id: w.id, name: w.full_name }))} suburbs={suburbs ?? []} />
 
@@ -25,8 +27,8 @@ export default async function Checks() {
         <div className="label px-3 pt-3">{t('checks.byWalker')}</div>
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-slate-500">
-            <tr>{[t('common.walker'), t('checks.checks'), t('checks.pass'), t('checks.fail'), t('checks.rate'), t('checks.last')].map((h) =>
-              <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
+            <tr>{[t('common.walker'), t('checks.checks'), t('checks.pass'), t('checks.fail'), t('checks.rate'), t('checks.last')].map((h, i) =>
+              <th key={h} className="px-3 py-2 font-medium">{h}{i === 4 && <Hint text={t('help.checks.rate')} align="right" />}</th>)}</tr>
           </thead>
           <tbody>
             {(stats ?? []).length === 0 && <tr><td colSpan={6} className="px-3 py-3 text-slate-400">{t('checks.noWalkers')}</td></tr>}

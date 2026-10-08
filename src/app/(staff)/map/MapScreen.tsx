@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { Legend, STATUS_COLORS, STATUS_LABELS } from '@/components/SuburbMap';
 import { useI18n } from '@/lib/i18n/client';
+import Hint from '@/components/Hint';
+
 import { trError } from '@/lib/i18n/core';
 import { assignSuburb, reassign, setAssignmentStatus, updateSuburb } from './actions';
 
@@ -92,7 +94,7 @@ export default function MapScreen({ companies, walkers }: { companies: Company[]
         {msg && <p className="mb-3 rounded bg-red-50 p-2 text-sm text-red-700">{msg}</p>}
         {!p ? (
           <div className="text-sm text-slate-500">
-            {all ? t('map.count', { n: all.features.length }) : t('common.loading')}
+            <p className="font-medium text-ink">{all ? t('map.count', { n: all.features.length }) : t('common.loading')}</p><p className="mt-2">{t('help.map.page')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -103,10 +105,10 @@ export default function MapScreen({ companies, walkers }: { companies: Company[]
               </span>
             </div>
             <dl className="grid grid-cols-2 gap-2 text-sm">
-              <Item k={t('map.dwellings')} v={p.dwellings?.toLocaleString() ?? '—'} />
-              <Item k={t('map.cycle')} v={t('common.months', { n: p.cycle_months })} />
+              <Item hint={t('help.map.dwellings')} k={t('map.dwellings')} v={p.dwellings?.toLocaleString() ?? '—'} />
+              <Item hint={t('help.map.cycle')} k={t('map.cycle')} v={t('common.months', { n: p.cycle_months })} />
               <Item k={t('map.lastDrop')} v={p.last_drop ?? t('common.never')} />
-              <Item k={t('map.nextAllowed')} v={p.next_allowed ?? t('common.now')} />
+              <Item hint={t('help.map.next')} align="right" k={t('map.nextAllowed')} v={p.next_allowed ?? t('common.now')} />
               <Item k={t('common.walker')} v={p.walker_name ?? '—'} />
               <Item k={t('common.company')} v={p.company_name ?? '—'} />
             </dl>
@@ -120,12 +122,14 @@ export default function MapScreen({ companies, walkers }: { companies: Company[]
                 }}>
                   <WalkerSelect walkers={walkers} suburbId={p.id} defaultValue={p.walker_id ?? ''} />
                   <button className="btn-ghost" disabled={pending}>{t('map.handOver')}</button>
+                  <Hint text={t('help.map.handOver')} align="right" />
                 </form>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button className="btn" disabled={pending}
                     onClick={() => confirm(t('map.confirmComplete')) && run(() => setAssignmentStatus(p.assignment_id!, 'completed'))}>
                     {t('map.complete')}
                   </button>
+                  <span className="self-center"><Hint text={t('help.map.complete')} align="right" /></span>
                   <button className="btn-ghost" disabled={pending}
                     onClick={() => confirm(t('map.confirmCancel')) && run(() => setAssignmentStatus(p.assignment_id!, 'cancelled'))}>
                     {t('map.cancel')}
@@ -164,11 +168,11 @@ export default function MapScreen({ companies, walkers }: { companies: Company[]
                   {[3, 4].map((m) => <option key={m} value={m}>{t('common.months', { n: m })}</option>)}
                 </select>
               </label>
-              <label className="flex items-center justify-between text-sm">{t('map.override')}
+              <label className="flex items-center justify-between text-sm"><span>{t('map.override')}<Hint text={t('help.map.override')} /></span>
                 <input name="ov" type="number" min={0} className="input !w-32" placeholder="ABS" />
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <input name="ex" type="checkbox" defaultChecked={p.excluded} /> {t('map.exclude')}
+                <input name="ex" type="checkbox" defaultChecked={p.excluded} /> {t('map.exclude')}<Hint text={t('help.map.exclude')} />
               </label>
               <button className="btn-ghost" disabled={pending}>{t('common.save')}</button>
             </form>
@@ -182,8 +186,8 @@ export default function MapScreen({ companies, walkers }: { companies: Company[]
   );
 }
 
-function Item({ k, v }: { k: string; v: string }) {
-  return <div><dt className="label">{k}</dt><dd>{v}</dd></div>;
+function Item({ k, v, hint, align }: { k: string; v: string; hint?: string; align?: 'left' | 'right' }) {
+  return <div><dt className="label">{k}{hint && <Hint text={hint} align={align} />}</dt><dd>{v}</dd></div>;
 }
 
 function WalkerSelect({ walkers, suburbId, defaultValue, onPick }: {

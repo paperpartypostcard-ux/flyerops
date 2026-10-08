@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { fileToTrack } from '@/lib/gpx';
 import { useI18n } from '@/lib/i18n/client';
+import Hint from '@/components/Hint';
+
 import { trError } from '@/lib/i18n/core';
 
 const SuburbMap = dynamic(() => import('@/components/SuburbMap'), { ssr: false });
@@ -65,9 +67,9 @@ export default function WalkerScreen({ tasks }: { tasks: Task[] }) {
         <div className="label col-span-2">{t('me.report')}</div>
         <label className="text-sm">{t('common.date')}<input name="date" type="date" required className="input"
           defaultValue={new Date().toISOString().slice(0, 10)} /></label>
-        <label className="text-sm">{t('me.flyers')}<input name="flyers" type="number" min={0} required className="input" /></label>
-        <label className="text-sm">{t('me.hoursMMW')}<input name="hours" type="number" min={0} step="0.05" className="input" /></label>
-        <label className="text-sm">{t('me.gpx')}
+        <label className="text-sm">{t('me.flyers')}<Hint text={t('help.me.flyers')} align="right" /><input name="flyers" type="number" min={0} required className="input" /></label>
+        <label className="text-sm">{t('me.hoursMMW')}<Hint text={t('help.me.hours')} /><input name="hours" type="number" min={0} step="0.05" className="input" /></label>
+        <label className="text-sm">{t('me.gpx')}<Hint text={t('help.me.gpx')} align="right" />
           <input type="file" accept=".gpx,.kml" className="input !p-1.5" onChange={async (e) => {
             const file = e.target.files?.[0]; if (!file) return setPreview(null);
             try { setPreview(await fileToTrack(file)); setMsg({}); } catch (err) { setMsg({ error: (err as Error).message }); }

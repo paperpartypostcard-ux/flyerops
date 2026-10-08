@@ -26,7 +26,7 @@ export default async function Me() {
         </div>
       </header>
       <div className="mx-auto max-w-3xl space-y-4 p-3">
-      <h1 className="page-title pt-1">{t('me.hi', { name: me.full_name.split(' ')[0] })}</h1>
+      <div className="pt-1"><h1 className="page-title">{t('me.hi', { name: me.full_name.split(' ')[0] })}</h1><p className="page-sub">{t('help.me.page')}</p></div>
       <div className="grid grid-cols-3 gap-2 text-center">
         <Stat k={t('me.onHand')} v={stats?.flyers_on_hand} loc={locale(lang)} />
         <Stat k={t('me.delivered')} v={stats?.flyers_total} loc={locale(lang)} />

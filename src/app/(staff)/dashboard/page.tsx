@@ -4,6 +4,8 @@ import { STATUS_COLORS } from '@/lib/status';
 import { getI18n } from '@/lib/i18n/server';
 import { locale, type T } from '@/lib/i18n/core';
 import DailyChart from './DailyChart';
+import Hint from '@/components/Hint';
+
 
 type Summary = {
   from: string; to: string; days: number;
@@ -45,7 +47,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="page-title">{t('dash.title')}</h1>
+        <div><h1 className="page-title">{t('dash.title')}</h1><p className="page-sub">{t('help.dash.page')}</p></div>
         <div className="flex gap-1">
           {PERIODS.map((p) => (
             <Link key={p} href={`/dashboard?days=${p}`}
@@ -57,16 +59,16 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Tile label={t('dash.flyers')} value={n(k.flyers)}
+        <Tile hint={t('help.dash.flyers')} label={t('dash.flyers')} value={n(k.flyers)}
           sub={delta == null ? t('dash.prev', { d: days, n: n(k.flyers_prev) }) : t('dash.vsPrev', { arrow: delta >= 0 ? '▲' : '▼', pct: Math.abs(delta), d: days })} />
-        <Tile label={t('dash.avgWeek')} value={n(Math.round(k.flyers / weeks))} sub={t('dash.perMonth', { n: n(Math.round(k.flyers / months)) })} />
-        <Tile label={t('dash.avgHours')} value={n(Math.round((Number(k.hours) / weeks) * 10) / 10)}
+        <Tile hint={t('help.dash.avgWeek')} label={t('dash.avgWeek')} value={n(Math.round(k.flyers / weeks))} sub={t('dash.perMonth', { n: n(Math.round(k.flyers / months)) })} />
+        <Tile hint={t('help.dash.avgHours')} label={t('dash.avgHours')} value={n(Math.round((Number(k.hours) / weeks) * 10) / 10)}
           sub={t('dash.perMonthWalks', { n: n(Math.round(Number(k.hours) / months)), w: n(k.walks) })} />
-        <Tile label={t('dash.perHour')} value={perHour == null ? '—' : n(perHour)} sub={t('dash.teamAvg', { n: n(k.active_walkers) })} />
-        <Tile label={t('dash.pay')} value={money(Math.round(k.flyers * rate) / 1000)} sub={t('dash.atRate', { rate })} />
-        <Tile label={t('dash.suburbsWalked')} value={n(k.suburbs_walked)} sub={t('dash.completedOpen', { c: n(k.completed), o: n(k.open) })} />
-        <Tile label={t('dash.stock')} value={n(k.stock_total)} sub={t('dash.onHand', { n: n(k.on_hand_total) })} />
-        <Tile label={t('dash.checks')} value={n(k.checks)}
+        <Tile hint={t('help.dash.perHour')} label={t('dash.perHour')} value={perHour == null ? '—' : n(perHour)} sub={t('dash.teamAvg', { n: n(k.active_walkers) })} />
+        <Tile hint={t('help.dash.pay')} label={t('dash.pay')} value={money(Math.round(k.flyers * rate) / 1000)} sub={t('dash.atRate', { rate })} />
+        <Tile hint={t('help.dash.suburbs')} label={t('dash.suburbsWalked')} value={n(k.suburbs_walked)} sub={t('dash.completedOpen', { c: n(k.completed), o: n(k.open) })} />
+        <Tile hint={t('help.dash.stock')} label={t('dash.stock')} value={n(k.stock_total)} sub={t('dash.onHand', { n: n(k.on_hand_total) })} />
+        <Tile hint={t('help.dash.checks')} label={t('dash.checks')} value={n(k.checks)}
           sub={k.checks_failed ? t('dash.failed', { n: n(k.checks_failed) }) : t('dash.noFailures')} warn={k.checks_failed > 0} />
       </div>
 
@@ -104,7 +106,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       <div className="card overflow-x-auto p-0">
         <div className="flex flex-wrap items-center justify-between gap-2 px-3 pt-3">
-          <div className="label">{t('dash.next')}</div>
+          <div className="label">{t('dash.next')}<Hint text={t('help.dash.next')} /></div>
           <form action="/dashboard" className="flex items-center gap-2 text-sm">
             <input type="hidden" name="days" value={days} />
             <select name="w" defaultValue={walkerParam ?? ''} className="input !w-auto !py-1">
@@ -144,10 +146,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   );
 }
 
-function Tile({ label, value, sub, warn }: { label: string; value: string; sub?: string; warn?: boolean }) {
+function Tile({ label, value, sub, warn, hint }: { label: string; value: string; sub?: string; warn?: boolean; hint?: string }) {
   return (
     <div className="card">
-      <div className="label">{label}</div>
+      <div className="label">{label}{hint && <Hint text={hint} />}</div>
       <div className="mt-2 text-3xl font-bold tracking-tight">{value}</div>
       {sub && <div className={`text-xs ${warn ? 'font-medium text-red-600' : 'text-slate-500'}`}>{sub}</div>}
     </div>

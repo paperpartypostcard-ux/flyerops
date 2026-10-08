@@ -1,5 +1,7 @@
 import { supabaseServer, requireUser } from '@/lib/supabase/server';
 import StockForm from './StockForm';
+import Hint from '@/components/Hint';
+
 import { getI18n } from '@/lib/i18n/server';
 import { locale } from '@/lib/i18n/core';
 
@@ -22,7 +24,7 @@ export default async function Stock() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
-      <h1 className="page-title">{t('stock.title')}</h1>
+      <div><h1 className="page-title">{t('stock.title')}</h1><p className="page-sub">{t('help.stock.page')}</p></div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {(wh ?? []).map((w) => (
@@ -41,7 +43,7 @@ export default async function Stock() {
 
       <div className="card overflow-x-auto p-0">
         <div className="flex items-baseline justify-between px-3 pt-3">
-          <div className="label">{t('stock.onHand')}</div>
+          <div className="label">{t('stock.onHand')}<Hint text={t('help.stock.onHand')} /></div>
           <div className="text-xs text-slate-500">{t('stock.totalN', { n: n(totalHand) })}</div>
         </div>
         <table className="w-full text-sm">

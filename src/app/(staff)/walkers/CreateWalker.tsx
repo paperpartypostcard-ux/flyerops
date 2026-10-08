@@ -2,6 +2,8 @@
 import { useActionState } from 'react';
 import { createWalker } from './actions';
 import { useI18n } from '@/lib/i18n/client';
+import Hint from '@/components/Hint';
+
 
 export default function CreateWalker({ suburbs, companies, canCreateStaff }: {
   suburbs: { id: number; name: string }[]; companies: { id: string; name: string }[]; canCreateStaff: boolean;
@@ -10,7 +12,7 @@ export default function CreateWalker({ suburbs, companies, canCreateStaff }: {
   const { t } = useI18n();
   return (
     <form action={action} className="card grid gap-2 sm:grid-cols-3">
-      <div className="label sm:col-span-3">{t('walkers.add')}</div>
+      <div className="label sm:col-span-3">{t('walkers.add')}<Hint text={t('help.walkers.password')} /></div>
       <input name="full_name" required placeholder={t('walkers.fullName')} className="input" />
       <input name="email" type="email" required placeholder={t('walkers.email')} className="input" />
       <input name="phone" placeholder={t('walkers.phone')} className="input" />

@@ -3,6 +3,8 @@ import { useActionState, useRef, useState } from 'react';
 
 import { addStockMove } from './actions';
 import { useI18n } from '@/lib/i18n/client';
+import Hint from '@/components/Hint';
+
 
 const BOX = 1200;
 
@@ -19,7 +21,7 @@ export default function StockForm({ companies, walkers }: { companies: Opt[]; wa
   const today = new Date().toISOString().slice(0, 10);
   return (
     <form action={action} className="card grid gap-2 sm:grid-cols-3">
-      <div className="label sm:col-span-3">{t('stock.new')}</div>
+      <div className="label sm:col-span-3">{t('stock.new')}<Hint text={t('help.stock.op')} /></div>
       <select name="type" className="input" value={type} onChange={(e) => setType(e.target.value)}>
         {OPS.map((v) => <option key={v} value={v}>{t(`stock.op.${v}`)}</option>)}
       </select>

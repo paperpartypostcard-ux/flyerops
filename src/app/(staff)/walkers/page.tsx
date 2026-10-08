@@ -1,6 +1,8 @@
 import { supabaseServer, requireUser } from '@/lib/supabase/server';
 import { setWalkerCompany, setWalkerStatus } from './actions';
 import CreateWalker from './CreateWalker';
+import Hint from '@/components/Hint';
+
 import { getI18n } from '@/lib/i18n/server';
 import { locale } from '@/lib/i18n/core';
 
@@ -18,12 +20,14 @@ export default async function Walkers() {
   const byId = new Map((stats ?? []).map((s) => [s.walker_id, s]));
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
-      <h1 className="page-title">{t('walkers.title')}</h1>
+      <div><h1 className="page-title">{t('walkers.title')}</h1><p className="page-sub">{t('help.walkers.page')}</p></div>
       <div className="card overflow-x-auto p-0">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs text-slate-500">
-            <tr>{[t('walkers.name'), t('walkers.contact'), t('walkers.livesIn'), t('common.company'), t('common.flyers'), t('common.hours'), t('common.perHour'), t('walkers.onHand'), t('common.status'), ''].map((h) =>
-              <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
+            <tr>{([[t('walkers.name')], [t('walkers.contact')], [t('walkers.livesIn'), t('help.walkers.home')], [t('common.company'), t('help.walkers.company')],
+              [t('common.flyers')], [t('common.hours')], [t('common.perHour')], [t('walkers.onHand'), t('help.walkers.onHand')],
+              [t('common.status'), t('help.walkers.deactivate')], ['']] as [string, string?][]).map(([h, hint], i) =>
+              <th key={h + i} className="px-3 py-2 font-medium">{h}{hint && <Hint text={hint} align={i > 6 ? 'right' : 'left'} />}</th>)}</tr>
           </thead>
           <tbody>
             {(people ?? []).map((p) => {

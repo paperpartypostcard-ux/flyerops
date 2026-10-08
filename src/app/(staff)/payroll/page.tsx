@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { supabaseServer, requireUser } from '@/lib/supabase/server';
 import { presets, resolvePeriod } from '@/lib/periods';
 import RateForm from './RateForm';
+import Hint from '@/components/Hint';
+
 import { getI18n } from '@/lib/i18n/server';
 import { locale } from '@/lib/i18n/core';
 
@@ -28,10 +30,10 @@ export default async function Payroll({ searchParams }: { searchParams: Promise<
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="page-title">{t('pay.title')}</h1>
+        <div><h1 className="page-title">{t('pay.title')}</h1><p className="page-sub">{t('help.pay.page')}</p></div>
         {me.role === 'owner'
           ? <RateForm rate={rate} />
-          : <span className="text-sm text-slate-600">{t('pay.rateRO', { rate })}</span>}
+          : <span className="text-sm text-slate-600">{t('pay.rateRO', { rate })}<Hint text={t('help.pay.rate')} align="right" /></span>}
       </div>
 
       <div className="card flex flex-wrap items-center gap-2">
@@ -48,6 +50,7 @@ export default async function Payroll({ searchParams }: { searchParams: Promise<
           <button className={`rounded-lg px-3 py-1.5 ${period.key === 'custom' ? 'bg-ink text-white' : 'border border-line bg-white hover:bg-paper'}`}>{t('common.apply')}</button>
         </form>
         <a href={`/payroll/csv?${qs}`} className="btn-ghost ml-auto">{t('pay.export')}</a>
+        <Hint text={t('help.pay.period')} align="right" />
       </div>
 
       <div className="grid grid-cols-3 gap-3">
