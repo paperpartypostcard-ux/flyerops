@@ -2,12 +2,12 @@
 import { useState } from 'react';
 
 type Day = { day: string; flyers: number };
-const fmtDay = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+const fmtDay = (d: string) => new Date(d.slice(0, 10) + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
 
 /** Single-series daily bars: one hue, rounded data-ends, 2px gaps, hover tooltip. */
 export default function DailyChart({ days }: { days: Day[] }) {
   const [hover, setHover] = useState<number | null>(null);
-  const max = Math.max(1, ...days.map((d) => d.flyers));
+  const max = Math.max(10, ...days.map((d) => d.flyers));
   const top = niceCeil(max);
   const h = hover != null ? days[hover] : null;
 
