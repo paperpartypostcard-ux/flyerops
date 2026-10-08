@@ -14,7 +14,7 @@ export default async function Walkers() {
   const byId = new Map((stats ?? []).map((s) => [s.walker_id, s]));
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
-      <h1 className="text-xl font-semibold">Walkers</h1>
+      <h1 className="page-title">Walkers</h1>
       <div className="card overflow-x-auto p-0">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs text-slate-500">

@@ -1,6 +1,7 @@
 import { requireUser, supabaseServer } from '@/lib/supabase/server';
 import { signOut } from '@/app/actions';
 import WalkerScreen from './WalkerScreen';
+import Brand from '@/components/Brand';
 
 export default async function Me() {
   const me = await requireUser();
@@ -13,11 +14,15 @@ export default async function Me() {
       .order('walked_on', { ascending: false }).limit(20),
   ]);
   return (
-    <div className="mx-auto max-w-3xl space-y-4 p-3">
-      <header className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Hi, {me.full_name.split(' ')[0]}</h1>
-        <form action={signOut}><button className="btn-ghost">Sign out</button></form>
+    <div className="min-h-dvh">
+      <header className="bg-ink">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-3 py-2.5">
+          <Brand />
+          <form action={signOut}><button className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white">Sign out</button></form>
+        </div>
       </header>
+      <div className="mx-auto max-w-3xl space-y-4 p-3">
+      <h1 className="page-title pt-1">Hi, {me.full_name.split(' ')[0]}</h1>
       <div className="grid grid-cols-3 gap-2 text-center">
         <Stat k="Flyers on hand" v={stats?.flyers_on_hand} />
         <Stat k="Delivered" v={stats?.flyers_total} />
@@ -41,10 +46,11 @@ export default async function Me() {
           </ul>
         )}
       </section>
+      </div>
     </div>
   );
 }
 
 function Stat({ k, v }: { k: string; v: number | string | null | undefined }) {
-  return <div className="card !p-2"><div className="text-lg font-semibold">{v != null ? Number(v).toLocaleString() : '—'}</div><div className="label">{k}</div></div>;
+  return <div className="card !p-2"><div className="text-xl font-bold">{v != null ? Number(v).toLocaleString() : '—'}</div><div className="label">{k}</div></div>;
 }

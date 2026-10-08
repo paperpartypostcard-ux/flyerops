@@ -15,7 +15,7 @@ export default async function Checks() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
-      <h1 className="text-xl font-semibold">Verification checks</h1>
+      <h1 className="page-title">Verification checks</h1>
 
       <CheckForm walkers={(walkers ?? []).map((w) => ({ id: w.id, name: w.full_name }))} suburbs={suburbs ?? []} />
 

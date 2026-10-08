@@ -24,7 +24,7 @@ export default async function Payroll({ searchParams }: { searchParams: Promise<
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Payroll</h1>
+        <h1 className="page-title">Payroll</h1>
         {me.role === 'owner'
           ? <RateForm rate={rate} />
           : <span className="text-sm text-slate-600">Rate ${rate} per 1000 flyers</span>}
@@ -33,7 +33,7 @@ export default async function Payroll({ searchParams }: { searchParams: Promise<
       <div className="card flex flex-wrap items-center gap-2">
         {presets().map((p) => (
           <Link key={p.key} href={`/payroll?p=${p.key}`}
-            className={`rounded-lg px-3 py-1.5 text-sm ${p.key === period.key ? 'bg-slate-900 text-white' : 'border border-slate-300 hover:bg-slate-100'}`}>
+            className={`rounded-lg px-3 py-1.5 text-sm ${p.key === period.key ? 'bg-ink text-white' : 'border border-line bg-white hover:bg-paper'}`}>
             {p.label}
           </Link>
         ))}
@@ -41,16 +41,16 @@ export default async function Payroll({ searchParams }: { searchParams: Promise<
           <input type="date" name="from" defaultValue={period.from} className="input !w-auto !py-1" />
           <span>–</span>
           <input type="date" name="to" defaultValue={period.to} className="input !w-auto !py-1" />
-          <button className={`rounded-lg px-3 py-1.5 ${period.key === 'custom' ? 'bg-slate-900 text-white' : 'border border-slate-300 hover:bg-slate-100'}`}>Apply</button>
+          <button className={`rounded-lg px-3 py-1.5 ${period.key === 'custom' ? 'bg-ink text-white' : 'border border-line bg-white hover:bg-paper'}`}>Apply</button>
         </form>
         <a href={`/payroll/csv?${qs}`} className="btn-ghost ml-auto">Export CSV</a>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <div className="card"><div className="label">To pay</div><div className="mt-1 text-2xl font-semibold">{money(total.earnings)}</div>
+        <div className="card"><div className="label">To pay</div><div className="mt-2 text-3xl font-bold tracking-tight">{money(total.earnings)}</div>
           <div className="text-xs text-slate-500">{period.from} – {period.to}</div></div>
-        <div className="card"><div className="label">Flyers delivered</div><div className="mt-1 text-2xl font-semibold">{n(total.flyers)}</div></div>
-        <div className="card"><div className="label">Hours</div><div className="mt-1 text-2xl font-semibold">{n(Math.round(total.hours * 10) / 10)}</div></div>
+        <div className="card"><div className="label">Flyers delivered</div><div className="mt-2 text-3xl font-bold tracking-tight">{n(total.flyers)}</div></div>
+        <div className="card"><div className="label">Hours</div><div className="mt-2 text-3xl font-bold tracking-tight">{n(Math.round(total.hours * 10) / 10)}</div></div>
       </div>
 
       {error && <p className="text-sm text-red-600">{error.message}</p>}

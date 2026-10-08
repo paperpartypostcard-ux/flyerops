@@ -19,7 +19,7 @@ export default async function Stock() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
-      <h1 className="text-xl font-semibold">Flyer stock</h1>
+      <h1 className="page-title">Flyer stock</h1>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {(wh ?? []).map((w) => (
@@ -27,7 +27,7 @@ export default async function Stock() {
             <div className="flex items-center gap-2 text-sm font-medium">
               <i className="inline-block h-3 w-3 rounded-sm" style={{ background: w.company_color }} />{w.company_name}
             </div>
-            <div className="mt-1 text-2xl font-semibold">{n(w.balance)}</div>
+            <div className="mt-2 text-3xl font-bold tracking-tight">{n(w.balance)}</div>
             <div className="text-xs text-slate-500">in warehouse · received {n(w.received)} · issued {n(w.issued)}</div>
           </div>
         ))}

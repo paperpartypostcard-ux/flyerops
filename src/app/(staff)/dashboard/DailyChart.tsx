@@ -33,7 +33,7 @@ export default function DailyChart({ days }: { days: Day[] }) {
                 <div className="w-full rounded-t-[4px]"
                   style={{
                     height: d.flyers ? `${Math.max(2, (d.flyers / top) * 100)}%` : 0,
-                    background: hover === i ? '#1d4ed8' : '#3b82f6',
+                    background: hover === i ? '#25665a' : '#2f7d6d',
                   }} />
               </div>
             ))}

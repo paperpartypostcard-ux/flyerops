@@ -41,11 +41,11 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <h1 className="page-title">Dashboard</h1>
         <div className="flex gap-1">
           {PERIODS.map((p) => (
             <Link key={p} href={`/dashboard?days=${p}`}
-              className={`rounded-lg px-3 py-1.5 text-sm ${p === days ? 'bg-slate-900 text-white' : 'border border-slate-300 hover:bg-slate-100'}`}>
+              className={`rounded-lg px-3 py-1.5 text-sm ${p === days ? 'bg-ink text-white' : 'border border-line bg-white hover:bg-paper'}`}>
               {p} days
             </Link>
           ))}
@@ -144,7 +144,7 @@ function Tile({ label, value, sub, warn }: { label: string; value: string; sub?:
   return (
     <div className="card">
       <div className="label">{label}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
+      <div className="mt-2 text-3xl font-bold tracking-tight">{value}</div>
       {sub && <div className={`text-xs ${warn ? 'font-medium text-red-600' : 'text-slate-500'}`}>{sub}</div>}
     </div>
   );
