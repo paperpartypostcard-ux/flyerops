@@ -1,11 +1,14 @@
 import { supabaseServer, requireUser } from '@/lib/supabase/server';
 import StockForm from './StockForm';
+import { getI18n } from '@/lib/i18n/server';
+import { locale } from '@/lib/i18n/core';
 
-const TYPE_LABEL: Record<string, string> = { receive: 'Received', issue: 'Issued', return: 'Returned', adjust: 'Adjusted' };
-const n = (v: number | null | undefined) => (v ?? 0).toLocaleString();
 
 export default async function Stock() {
   await requireUser(true);
+  const { lang, t } = await getI18n();
+  const n = (v: number | null | undefined) => (v ?? 0).toLocaleString(locale(lang));
+  const TYPE_LABEL: Record<string, string> = { receive: t('stock.t.receive'), issue: t('stock.t.issue'), return: t('stock.t.return'), adjust: t('stock.t.adjust') };
   const sb = await supabaseServer();
   const [{ data: wh }, { data: hand }, { data: moves }, { data: companies }, { data: walkers }] = await Promise.all([
     sb.from('stock_warehouse').select('*').order('company_name'),
@@ -19,7 +22,7 @@ export default async function Stock() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
-      <h1 className="page-title">Flyer stock</h1>
+      <h1 className="page-title">{t('stock.title')}</h1>
 
       <div className="grid gap-3 sm:grid-cols-3">
         {(wh ?? []).map((w) => (
@@ -28,7 +31,7 @@ export default async function Stock() {
               <i className="inline-block h-3 w-3 rounded-sm" style={{ background: w.company_color }} />{w.company_name}
             </div>
             <div className="mt-2 text-3xl font-bold tracking-tight">{n(w.balance)}</div>
-            <div className="text-xs text-slate-500">in warehouse · received {n(w.received)} · issued {n(w.issued)}</div>
+            <div className="text-xs text-slate-500">{t('stock.inWarehouse', { r: n(w.received), i: n(w.issued) })}</div>
           </div>
         ))}
       </div>
@@ -38,16 +41,16 @@ export default async function Stock() {
 
       <div className="card overflow-x-auto p-0">
         <div className="flex items-baseline justify-between px-3 pt-3">
-          <div className="label">On hand with walkers</div>
-          <div className="text-xs text-slate-500">total {n(totalHand)}</div>
+          <div className="label">{t('stock.onHand')}</div>
+          <div className="text-xs text-slate-500">{t('stock.totalN', { n: n(totalHand) })}</div>
         </div>
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-slate-500">
-            <tr>{['Walker', 'Company', 'Issued (net)', 'Delivered', 'On hand'].map((h) =>
+            <tr>{[t('common.walker'), t('common.company'), t('stock.issuedNet'), t('stock.delivered'), t('stock.onHandCol')].map((h) =>
               <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
           </thead>
           <tbody>
-            {(hand ?? []).length === 0 && <tr><td colSpan={5} className="px-3 py-3 text-slate-400">Nobody holds flyers.</td></tr>}
+            {(hand ?? []).length === 0 && <tr><td colSpan={5} className="px-3 py-3 text-slate-400">{t('stock.nobody')}</td></tr>}
             {(hand ?? []).map((h) => (
               <tr key={`${h.walker_id}-${h.company_id}`} className="border-t">
                 <td className="px-3 py-2">{h.walker_name}</td>
@@ -62,14 +65,14 @@ export default async function Stock() {
       </div>
 
       <div className="card overflow-x-auto p-0">
-        <div className="label px-3 pt-3">Recent movements</div>
+        <div className="label px-3 pt-3">{t('stock.recent')}</div>
         <table className="w-full text-sm">
           <thead className="text-left text-xs text-slate-500">
-            <tr>{['Date', 'Operation', 'Company', 'Walker', 'Qty', 'Note'].map((h) =>
+            <tr>{[t('common.date'), t('stock.operation'), t('common.company'), t('common.walker'), t('stock.qtyCol'), t('common.notes')].map((h) =>
               <th key={h} className="px-3 py-2 font-medium">{h}</th>)}</tr>
           </thead>
           <tbody>
-            {(moves ?? []).length === 0 && <tr><td colSpan={6} className="px-3 py-3 text-slate-400">No movements yet.</td></tr>}
+            {(moves ?? []).length === 0 && <tr><td colSpan={6} className="px-3 py-3 text-slate-400">{t('stock.noMoves')}</td></tr>}
             {(moves ?? []).map((m) => (
               <tr key={m.id} className="border-t">
                 <td className="px-3 py-2 whitespace-nowrap">{m.moved_on}</td>

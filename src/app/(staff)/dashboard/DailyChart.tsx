@@ -1,12 +1,16 @@
 'use client';
 import { useState } from 'react';
+import { useI18n } from '@/lib/i18n/client';
+import { locale } from '@/lib/i18n/core';
 
 type Day = { day: string; flyers: number };
-const fmtDay = (d: string) => new Date(d.slice(0, 10) + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
 
 /** Single-series daily bars: one hue, rounded data-ends, 2px gaps, hover tooltip. */
 export default function DailyChart({ days }: { days: Day[] }) {
   const [hover, setHover] = useState<number | null>(null);
+  const { lang, t } = useI18n();
+  const loc = locale(lang);
+  const fmtDay = (d: string) => new Date(d.slice(0, 10) + 'T00:00:00').toLocaleDateString(loc, { day: 'numeric', month: 'short' });
   const max = Math.max(10, ...days.map((d) => d.flyers));
   const top = niceCeil(max);
   const h = hover != null ? days[hover] : null;
@@ -14,14 +18,14 @@ export default function DailyChart({ days }: { days: Day[] }) {
   return (
     <div className="card">
       <div className="flex items-baseline justify-between">
-        <div className="label">Flyers delivered per day</div>
+        <div className="label">{t('chart.title')}</div>
         <div className="h-5 text-xs text-slate-600">
-          {h ? <><b className="text-slate-900">{h.flyers.toLocaleString()}</b> on {fmtDay(h.day)}</> : null}
+          {h ? t('chart.on', { n: h.flyers.toLocaleString(loc), day: fmtDay(h.day) }) : null}
         </div>
       </div>
       <div className="mt-3 flex gap-2">
         <div className="flex h-40 flex-col justify-between text-right text-[10px] text-slate-400">
-          <span>{top.toLocaleString()}</span><span>{(top / 2).toLocaleString()}</span><span>0</span>
+          <span>{top.toLocaleString(loc)}</span><span>{(top / 2).toLocaleString(loc)}</span><span>0</span>
         </div>
         <div className="relative h-40 flex-1">
           <div className="absolute inset-x-0 top-0 border-t border-slate-100" />
@@ -29,7 +33,7 @@ export default function DailyChart({ days }: { days: Day[] }) {
           <div className="absolute inset-0 flex items-end gap-[2px] border-b border-slate-300" onMouseLeave={() => setHover(null)}>
             {days.map((d, i) => (
               <div key={d.day} className="flex h-full flex-1 items-end" onMouseEnter={() => setHover(i)}
-                title={`${fmtDay(d.day)}: ${d.flyers.toLocaleString()} flyers`}>
+                title={t('chart.tip', { day: fmtDay(d.day), n: d.flyers.toLocaleString(loc) })}>
                 <div className="w-full rounded-t-[4px]"
                   style={{
                     height: d.flyers ? `${Math.max(2, (d.flyers / top) * 100)}%` : 0,

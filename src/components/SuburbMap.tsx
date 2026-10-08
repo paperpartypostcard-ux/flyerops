@@ -7,6 +7,7 @@ type GeoJSONSource = maplibregl.GeoJSONSource; type MLMap = maplibregl.Map;
 maplibregl.setWorkerUrl('/maplibre-gl-worker.mjs');
 
 import { STATUS_COLORS, STATUS_LABELS } from '@/lib/status';
+import { useI18n } from '@/lib/i18n/client';
 export { STATUS_COLORS, STATUS_LABELS };
 
 type FC = GeoJSON.FeatureCollection;
@@ -112,14 +113,15 @@ function walk(g: GeoJSON.Geometry, fn: (c: number[]) => void) {
 }
 
 export function Legend() {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap gap-3 text-xs">
-      {Object.entries(STATUS_LABELS).map(([k, v]) => (
+      {Object.keys(STATUS_LABELS).map((k) => (
         <span key={k} className="flex items-center gap-1">
-          <i className="inline-block h-3 w-3 rounded-sm" style={{ background: STATUS_COLORS[k] }} />{v}
+          <i className="inline-block h-3 w-3 rounded-sm" style={{ background: STATUS_COLORS[k] }} />{t(`status.${k}` as 'status.available')}
         </span>
       ))}
-      <span className="flex items-center gap-1"><i className="inline-block h-1 w-4 bg-red-600" />Walked</span>
+      <span className="flex items-center gap-1"><i className="inline-block h-1 w-4 bg-red-600" />{t('status.walked')}</span>
     </div>
   );
 }

@@ -1,17 +1,20 @@
 'use server';
 import { revalidatePath } from 'next/cache';
 import { requireUser, supabaseAdmin, supabaseServer } from '@/lib/supabase/server';
+import { getI18n } from '@/lib/i18n/server';
+import { trError } from '@/lib/i18n/core';
 
 export async function createWalker(_: unknown, form: FormData): Promise<{ error?: string; ok?: string }> {
   const me = await requireUser(true);
+  const { t } = await getI18n();
   const role = me.role === 'owner' ? String(form.get('role') || 'walker') : 'walker';
   const email = String(form.get('email')).trim().toLowerCase();
   const password = String(form.get('password'));
-  if (password.length < 10) return { error: 'Password must be at least 10 characters.' };
+  if (password.length < 10) return { error: t('walkers.err.password') };
 
   const admin = supabaseAdmin();
   const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
-  if (error) return { error: error.message };
+  if (error) return { error: trError(error.message, t) };
   const { error: e2 } = await admin.from('profiles').insert({
     id: data.user.id, email, role,
     full_name: String(form.get('full_name')).trim(),
@@ -19,9 +22,9 @@ export async function createWalker(_: unknown, form: FormData): Promise<{ error?
     home_suburb_id: Number(form.get('home')) || null,
     company_id: String(form.get('company') || '') || null,
   });
-  if (e2) { await admin.auth.admin.deleteUser(data.user.id); return { error: e2.message }; }
+  if (e2) { await admin.auth.admin.deleteUser(data.user.id); return { error: trError(e2.message, t) }; }
   revalidatePath('/walkers');
-  return { ok: `Created ${email}. Send them the password securely.` };
+  return { ok: t('walkers.ok.created', { email }) };
 }
 
 export async function setWalkerCompany(id: string, form: FormData) {

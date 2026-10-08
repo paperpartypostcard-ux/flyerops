@@ -2,12 +2,16 @@ import Link from 'next/link';
 import { supabaseServer, requireUser } from '@/lib/supabase/server';
 import { presets, resolvePeriod } from '@/lib/periods';
 import RateForm from './RateForm';
+import { getI18n } from '@/lib/i18n/server';
+import { locale } from '@/lib/i18n/core';
 
-const money = (v: number) => v.toLocaleString('en-AU', { style: 'currency', currency: 'AUD' });
-const n = (v: number) => v.toLocaleString();
 
 export default async function Payroll({ searchParams }: { searchParams: Promise<{ p?: string; from?: string; to?: string }> }) {
   const me = await requireUser(true);
+  const { lang, t } = await getI18n();
+  const loc = locale(lang);
+  const money = (v: number) => v.toLocaleString(loc, { style: 'currency', currency: 'AUD' });
+  const n = (v: number) => v.toLocaleString(loc);
   const period = resolvePeriod(await searchParams);
   const sb = await supabaseServer();
   const [{ data: rows, error }, { data: settings }] = await Promise.all([
@@ -24,44 +28,44 @@ export default async function Payroll({ searchParams }: { searchParams: Promise<
   return (
     <div className="mx-auto max-w-6xl space-y-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="page-title">Payroll</h1>
+        <h1 className="page-title">{t('pay.title')}</h1>
         {me.role === 'owner'
           ? <RateForm rate={rate} />
-          : <span className="text-sm text-slate-600">Rate ${rate} per 1000 flyers</span>}
+          : <span className="text-sm text-slate-600">{t('pay.rateRO', { rate })}</span>}
       </div>
 
       <div className="card flex flex-wrap items-center gap-2">
         {presets().map((p) => (
           <Link key={p.key} href={`/payroll?p=${p.key}`}
             className={`rounded-lg px-3 py-1.5 text-sm ${p.key === period.key ? 'bg-ink text-white' : 'border border-line bg-white hover:bg-paper'}`}>
-            {p.label}
+            {t(`pay.p.${p.key}` as 'pay.p.custom')}
           </Link>
         ))}
         <form className="flex flex-wrap items-center gap-2 text-sm" action="/payroll">
           <input type="date" name="from" defaultValue={period.from} className="input !w-auto !py-1" />
           <span>–</span>
           <input type="date" name="to" defaultValue={period.to} className="input !w-auto !py-1" />
-          <button className={`rounded-lg px-3 py-1.5 ${period.key === 'custom' ? 'bg-ink text-white' : 'border border-line bg-white hover:bg-paper'}`}>Apply</button>
+          <button className={`rounded-lg px-3 py-1.5 ${period.key === 'custom' ? 'bg-ink text-white' : 'border border-line bg-white hover:bg-paper'}`}>{t('common.apply')}</button>
         </form>
-        <a href={`/payroll/csv?${qs}`} className="btn-ghost ml-auto">Export CSV</a>
+        <a href={`/payroll/csv?${qs}`} className="btn-ghost ml-auto">{t('pay.export')}</a>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <div className="card"><div className="label">To pay</div><div className="mt-2 text-3xl font-bold tracking-tight">{money(total.earnings)}</div>
+        <div className="card"><div className="label">{t('pay.toPay')}</div><div className="mt-2 text-3xl font-bold tracking-tight">{money(total.earnings)}</div>
           <div className="text-xs text-slate-500">{period.from} – {period.to}</div></div>
-        <div className="card"><div className="label">Flyers delivered</div><div className="mt-2 text-3xl font-bold tracking-tight">{n(total.flyers)}</div></div>
-        <div className="card"><div className="label">Hours</div><div className="mt-2 text-3xl font-bold tracking-tight">{n(Math.round(total.hours * 10) / 10)}</div></div>
+        <div className="card"><div className="label">{t('pay.flyers')}</div><div className="mt-2 text-3xl font-bold tracking-tight">{n(total.flyers)}</div></div>
+        <div className="card"><div className="label">{t('pay.hours')}</div><div className="mt-2 text-3xl font-bold tracking-tight">{n(Math.round(total.hours * 10) / 10)}</div></div>
       </div>
 
       {error && <p className="text-sm text-red-600">{error.message}</p>}
       <div className="card overflow-x-auto p-0">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs text-slate-500">
-            <tr>{['Walker', 'Walks', 'Suburbs', 'Flyers', 'Hours', 'Flyers/h', 'Earnings'].map((h) =>
-              <th key={h} className={`px-3 py-2 font-medium ${h === 'Walker' ? '' : 'text-right'}`}>{h}</th>)}</tr>
+            <tr>{[t('common.walker'), t('common.walks'), t('common.suburbs'), t('common.flyers'), t('common.hours'), t('common.perHour'), t('pay.earnings')].map((h, i) =>
+              <th key={h} className={`px-3 py-2 font-medium ${i === 0 ? '' : 'text-right'}`}>{h}</th>)}</tr>
           </thead>
           <tbody>
-            {list.length === 0 && <tr><td colSpan={7} className="px-3 py-3 text-slate-400">No walkers.</td></tr>}
+            {list.length === 0 && <tr><td colSpan={7} className="px-3 py-3 text-slate-400">{t('pay.noWalkers')}</td></tr>}
             {list.map((r) => (
               <tr key={r.walker_id} className={`border-t ${r.status === 'inactive' ? 'text-slate-400' : ''}`}>
                 <td className="px-3 py-2">{r.full_name}<br /><span className="text-xs text-slate-500">{r.email}</span></td>
@@ -77,7 +81,7 @@ export default async function Payroll({ searchParams }: { searchParams: Promise<
           {list.length > 0 && (
             <tfoot>
               <tr className="border-t bg-slate-50 font-medium">
-                <td className="px-3 py-2">Total</td><td /><td />
+                <td className="px-3 py-2">{t('common.total')}</td><td /><td />
                 <td className="px-3 py-2 text-right">{n(total.flyers)}</td>
                 <td className="px-3 py-2 text-right">{n(Math.round(total.hours * 10) / 10)}</td><td />
                 <td className="px-3 py-2 text-right">{money(total.earnings)}</td>
@@ -87,7 +91,7 @@ export default async function Payroll({ searchParams }: { searchParams: Promise<
         </table>
       </div>
       <p className="text-xs text-slate-500">
-        Earnings = flyers delivered × rate ÷ 1000, by walk date. Walkers are contractors with ABN; bank details stay outside the system.
+        {t('pay.note')}
       </p>
     </div>
   );

@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { fileToTrack } from '@/lib/gpx';
+import { useI18n } from '@/lib/i18n/client';
+import { trError } from '@/lib/i18n/core';
 
 const SuburbMap = dynamic(() => import('@/components/SuburbMap'), { ssr: false });
 type Task = { id: string; status: string; suburb_id: number; suburb: string; company: string };
@@ -11,6 +13,7 @@ type Task = { id: string; status: string; suburb_id: number; suburb: string; com
 export default function WalkerScreen({ tasks }: { tasks: Task[] }) {
   const sb = useMemo(() => supabaseBrowser(), []);
   const router = useRouter();
+  const { t } = useI18n();
   const [taskId, setTaskId] = useState(tasks[0]?.id ?? '');
   const task = tasks.find((t) => t.id === taskId);
   const [suburbs, setSuburbs] = useState<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] });
@@ -30,7 +33,7 @@ export default function WalkerScreen({ tasks }: { tasks: Task[] }) {
     ? { ...coverage, features: [...coverage.features, { type: 'Feature' as const, geometry: preview, properties: {} }] }
     : coverage, [coverage, preview]);
 
-  if (!tasks.length) return <div className="card text-sm text-slate-500">No assigned suburbs right now.</div>;
+  if (!tasks.length) return <div className="card text-sm text-slate-500">{t('me.none')}</div>;
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); setBusy(true); setMsg({});
@@ -41,10 +44,10 @@ export default function WalkerScreen({ tasks }: { tasks: Task[] }) {
         p_hours: Number(f.get('hours')) || null, p_track: preview, p_notes: String(f.get('notes') || '') || null,
       });
       if (error) throw error;
-      setMsg({ ok: 'Walk saved. Thank you!' }); setPreview(null); (e.target as HTMLFormElement).reset();
+      setMsg({ ok: t('me.saved') }); setPreview(null); (e.target as HTMLFormElement).reset();
       router.refresh();
       sb.rpc('suburb_coverage', { p_suburb: task!.suburb_id }).then(({ data }) => setCoverage(data));
-    } catch (err) { setMsg({ error: (err as Error).message }); }
+    } catch (err) { setMsg({ error: trError((err as Error).message, t) }); }
     setBusy(false);
   }
 
@@ -56,22 +59,22 @@ export default function WalkerScreen({ tasks }: { tasks: Task[] }) {
       <div className="h-[55dvh] overflow-hidden rounded-xl border">
         <SuburbMap suburbs={one} coverage={cov} fit />
       </div>
-      <p className="text-xs text-slate-500">Red = already walked this cycle. Cover the rest.</p>
+      <p className="text-xs text-slate-500">{t('me.legend')}</p>
 
       <form onSubmit={submit} className="card grid grid-cols-2 gap-2">
-        <div className="label col-span-2">Report a walk</div>
-        <label className="text-sm">Date<input name="date" type="date" required className="input"
+        <div className="label col-span-2">{t('me.report')}</div>
+        <label className="text-sm">{t('common.date')}<input name="date" type="date" required className="input"
           defaultValue={new Date().toISOString().slice(0, 10)} /></label>
-        <label className="text-sm">Flyers delivered<input name="flyers" type="number" min={0} required className="input" /></label>
-        <label className="text-sm">Hours (Map My Walk)<input name="hours" type="number" min={0} step="0.05" className="input" /></label>
-        <label className="text-sm">Route file (GPX)
+        <label className="text-sm">{t('me.flyers')}<input name="flyers" type="number" min={0} required className="input" /></label>
+        <label className="text-sm">{t('me.hoursMMW')}<input name="hours" type="number" min={0} step="0.05" className="input" /></label>
+        <label className="text-sm">{t('me.gpx')}
           <input type="file" accept=".gpx,.kml" className="input !p-1.5" onChange={async (e) => {
             const file = e.target.files?.[0]; if (!file) return setPreview(null);
             try { setPreview(await fileToTrack(file)); setMsg({}); } catch (err) { setMsg({ error: (err as Error).message }); }
           }} />
         </label>
-        <textarea name="notes" placeholder="Notes (optional)" className="input col-span-2" rows={2} />
-        <button className="btn col-span-2" disabled={busy}>{busy ? 'Saving…' : 'Submit walk'}</button>
+        <textarea name="notes" placeholder={t('me.notesPh')} className="input col-span-2" rows={2} />
+        <button className="btn col-span-2" disabled={busy}>{busy ? t('me.saving') : t('me.submit')}</button>
         {msg.error && <p className="col-span-2 text-sm text-red-600">{msg.error}</p>}
         {msg.ok && <p className="col-span-2 text-sm text-green-700">{msg.ok}</p>}
       </form>
