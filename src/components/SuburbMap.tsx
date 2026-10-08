@@ -9,21 +9,6 @@ maplibregl.setWorkerUrl('/maplibre-gl-worker.mjs');
 import { STATUS_COLORS, STATUS_LABELS } from '@/lib/status';
 export { STATUS_COLORS, STATUS_LABELS };
 
-const BASE_STYLE: maplibregl.StyleSpecification = {
-  version: 8,
-  glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-  sources: {
-    osm: {
-      type: 'raster', tileSize: 256, maxzoom: 19,
-      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-      attribution: '© OpenStreetMap contributors',
-    },
-  },
-  layers: [
-    { id: 'osm', type: 'raster', source: 'osm', paint: { 'raster-saturation': -0.6, 'raster-opacity': 0.9 } },
-  ],
-};
-
 type FC = GeoJSON.FeatureCollection;
 const empty: FC = { type: 'FeatureCollection', features: [] };
 
@@ -44,7 +29,7 @@ export default function SuburbMap({
   useEffect(() => {
     const m = new maplibregl.Map({
       container: el.current!,
-      style: BASE_STYLE,
+      style: 'https://tiles.openfreemap.org/styles/positron', // free, commercial use OK, no key
       center: [144.96, -37.81], zoom: 9.5,
     });
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
@@ -61,14 +46,14 @@ export default function SuburbMap({
         paint: { 'line-color': ['case', ['boolean', ['feature-state', 'sel'], false], '#0f172a', '#475569'],
                  'line-width': ['case', ['boolean', ['feature-state', 'sel'], false], 2.5, 0.6] } });
       m.addLayer({ id: 'sub-label', type: 'symbol', source: 'suburbs', minzoom: 11,
-        layout: { 'text-field': ['get', 'name'], 'text-size': 11, 'text-font': ['Open Sans Semibold'] },
+        layout: { 'text-field': ['get', 'name'], 'text-size': 11, 'text-font': ['Noto Sans Regular'] },
         paint: { 'text-color': '#0f172a', 'text-halo-color': '#fff', 'text-halo-width': 1.2 } });
       m.addLayer({ id: 'cov', type: 'line', source: 'coverage',
         paint: { 'line-color': '#dc2626', 'line-width': 4, 'line-opacity': 0.8 } });
       // Walk date along each walked route (spec: walked streets with date)
       m.addLayer({ id: 'cov-date', type: 'symbol', source: 'coverage', minzoom: 13,
         layout: { 'symbol-placement': 'line', 'text-field': ['coalesce', ['get', 'walked_on'], ''], 'text-size': 11,
-                  'text-font': ['Open Sans Semibold'], 'symbol-spacing': 250 },
+                  'text-font': ['Noto Sans Regular'], 'symbol-spacing': 250 },
         paint: { 'text-color': '#991b1b', 'text-halo-color': '#fff', 'text-halo-width': 1.5 } });
       m.on('click', 'sub-fill', (e) => onSelectRef.current?.(Number(e.features?.[0]?.id)));
       m.on('mouseenter', 'sub-fill', () => (m.getCanvas().style.cursor = 'pointer'));
