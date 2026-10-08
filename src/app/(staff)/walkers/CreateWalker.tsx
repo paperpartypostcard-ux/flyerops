@@ -2,7 +2,9 @@
 import { useActionState } from 'react';
 import { createWalker } from './actions';
 
-export default function CreateWalker({ suburbs, canCreateStaff }: { suburbs: { id: number; name: string }[]; canCreateStaff: boolean }) {
+export default function CreateWalker({ suburbs, companies, canCreateStaff }: {
+  suburbs: { id: number; name: string }[]; companies: { id: string; name: string }[]; canCreateStaff: boolean;
+}) {
   const [state, action, pending] = useActionState(createWalker, {});
   return (
     <form action={action} className="card grid gap-2 sm:grid-cols-3">
@@ -13,6 +15,10 @@ export default function CreateWalker({ suburbs, canCreateStaff }: { suburbs: { i
       <select name="home" className="input" defaultValue="">
         <option value="">Home suburb…</option>
         {suburbs.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+      </select>
+      <select name="company" className="input" defaultValue="">
+        <option value="">Company…</option>
+        {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
       </select>
       <input name="password" type="text" required minLength={10} placeholder="Initial password (10+ chars)" className="input" />
       {canCreateStaff ? (

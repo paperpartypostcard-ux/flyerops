@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { Legend, STATUS_COLORS, STATUS_LABELS } from '@/components/SuburbMap';
@@ -8,7 +9,7 @@ import { assignSuburb, reassign, setAssignmentStatus, updateSuburb } from './act
 const SuburbMap = dynamic(() => import('@/components/SuburbMap'), { ssr: false });
 
 type Company = { id: string; name: string; color: string };
-type Walker = { id: string; full_name: string; home_suburb_id: number | null };
+type Walker = { id: string; full_name: string; home_suburb_id: number | null; company_id: string | null };
 type Props = {
   id: number; name: string; status: string; dwellings: number | null; cycle_months: number; excluded: boolean;
   last_drop: string | null; next_allowed: string | null; assignment_id: string | null; assignment_status: string | null;
@@ -19,7 +20,9 @@ type FC = GeoJSON.FeatureCollection<GeoJSON.Geometry, Props>;
 export default function MapScreen({ companies, walkers }: { companies: Company[]; walkers: Walker[] }) {
   const sb = useMemo(() => supabaseBrowser(), []);
   const [all, setAll] = useState<FC | null>(null);
-  const [sel, setSel] = useState<number | null>(null);
+  const params = useSearchParams();
+  const [sel, setSel] = useState<number | null>(() => Number(params.get('s')) || null);
+  const [focusOnSel, setFocusOnSel] = useState(() => !!params.get('s'));
   const [coverage, setCoverage] = useState<GeoJSON.FeatureCollection | null>(null);
   const [q, setQ] = useState('');
   const [statusF, setStatusF] = useState('');
@@ -45,6 +48,14 @@ export default function MapScreen({ companies, walkers }: { companies: Company[]
       (!statusF || f.properties.status === statusF) && (!s || f.properties.name.toLowerCase().includes(s))) };
   }, [all, q, statusF]);
 
+  // Zoom to search results (up to 25 matches) or to a suburb opened by link (/map?s=ID)
+  const focus = useMemo<FC | null>(() => {
+    if (!all) return null;
+    if (focusOnSel && sel != null) return { ...all, features: all.features.filter((f) => f.properties.id === sel) };
+    if (q.trim() && shown.features.length > 0 && shown.features.length <= 25) return shown;
+    return null;
+  }, [all, focusOnSel, sel, q, shown]);
+
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
     all?.features.forEach((f) => (c[f.properties.status] = (c[f.properties.status] ?? 0) + 1));
@@ -59,7 +70,8 @@ export default function MapScreen({ companies, walkers }: { companies: Company[]
   return (
     <div className="flex h-full flex-col md:flex-row">
       <div className="relative min-h-[50dvh] flex-1">
-        <SuburbMap suburbs={shown} coverage={coverage} selectedId={sel} onSelect={setSel} />
+        <SuburbMap suburbs={shown} coverage={coverage} selectedId={sel} focus={focus}
+          onSelect={(id) => { setFocusOnSel(false); setSel(id); }} />
         <div className="absolute left-2 top-2 flex flex-col gap-2 rounded-lg bg-white/95 p-2 shadow max-w-[calc(100%-4rem)]">
           <div className="flex gap-2">
             <input className="input !py-1" placeholder="Search suburb…" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -122,7 +134,10 @@ export default function MapScreen({ companies, walkers }: { companies: Company[]
                 run(() => assignSuburb(p.id, String(f.get('w')), String(f.get('c')), String(f.get('d') || '')));
               }}>
                 <div className="label">Assign</div>
-                <WalkerSelect walkers={walkers} suburbId={p.id} />
+                <WalkerSelect walkers={walkers} suburbId={p.id} onPick={(w, form) => {
+                  const c = form?.elements.namedItem('c') as HTMLSelectElement | null;
+                  if (c && w?.company_id) c.value = w.company_id;
+                }} />
                 <select name="c" required className="input">
                   {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
@@ -167,10 +182,14 @@ function Item({ k, v }: { k: string; v: string }) {
   return <div><dt className="label">{k}</dt><dd>{v}</dd></div>;
 }
 
-function WalkerSelect({ walkers, suburbId, defaultValue }: { walkers: Walker[]; suburbId: number; defaultValue?: string }) {
+function WalkerSelect({ walkers, suburbId, defaultValue, onPick }: {
+  walkers: Walker[]; suburbId: number; defaultValue?: string;
+  onPick?: (w: Walker | undefined, form: HTMLFormElement | null) => void;
+}) {
   const sorted = [...walkers].sort((a, b) => Number(b.home_suburb_id === suburbId) - Number(a.home_suburb_id === suburbId));
   return (
-    <select name="w" required className="input" defaultValue={defaultValue}>
+    <select name="w" required className="input" defaultValue={defaultValue}
+      onChange={(e) => onPick?.(walkers.find((w) => w.id === e.target.value), e.target.form)}>
       <option value="">Select walker…</option>
       {sorted.map((w) => (
         <option key={w.id} value={w.id}>{w.full_name}{w.home_suburb_id === suburbId ? ' (lives here)' : ''}</option>

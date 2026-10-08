@@ -17,10 +17,17 @@ export async function createWalker(_: unknown, form: FormData): Promise<{ error?
     full_name: String(form.get('full_name')).trim(),
     phone: String(form.get('phone') || '') || null,
     home_suburb_id: Number(form.get('home')) || null,
+    company_id: String(form.get('company') || '') || null,
   });
   if (e2) { await admin.auth.admin.deleteUser(data.user.id); return { error: e2.message }; }
   revalidatePath('/walkers');
   return { ok: `Created ${email}. Send them the password securely.` };
+}
+
+export async function setWalkerCompany(id: string, form: FormData) {
+  const sb = await supabaseServer();
+  await sb.from('profiles').update({ company_id: String(form.get('company') || '') || null }).eq('id', id);
+  revalidatePath('/walkers');
 }
 
 export async function setWalkerStatus(id: string, status: 'active' | 'inactive') {

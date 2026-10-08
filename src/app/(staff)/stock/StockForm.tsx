@@ -1,6 +1,9 @@
 'use client';
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
+
 import { addStockMove } from './actions';
+
+const BOX = 1200;
 
 type Opt = { id: string; name: string };
 const OPS = [
@@ -14,6 +17,8 @@ export default function StockForm({ companies, walkers }: { companies: Opt[]; wa
   const [state, action, pending] = useActionState(addStockMove, {});
   const [type, setType] = useState<string>('receive');
   const needsWalker = type === 'issue' || type === 'return';
+  const qtyRef = useRef<HTMLInputElement>(null);
+  const addBox = () => { if (qtyRef.current) qtyRef.current.value = String((Number(qtyRef.current.value) || 0) + BOX); };
   const today = new Date().toISOString().slice(0, 10);
   return (
     <form action={action} className="card grid gap-2 sm:grid-cols-3">
@@ -31,8 +36,13 @@ export default function StockForm({ companies, walkers }: { companies: Opt[]; wa
           {walkers.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
         </select>
       ) : <span className="hidden sm:block" />}
-      <input name="qty" type="number" required step={1} min={type === 'adjust' ? undefined : 1}
-        placeholder={type === 'adjust' ? 'Qty (e.g. -100)' : 'Qty'} className="input" />
+      <div className="flex gap-1">
+        <input ref={qtyRef} name="qty" type="number" required step={1} min={type === 'adjust' ? undefined : 1}
+          placeholder={type === 'adjust' ? 'Qty (e.g. -100)' : 'Qty'} className="input" />
+        {type !== 'adjust' && (
+          <button type="button" onClick={addBox} className="btn-ghost whitespace-nowrap" title="Add one box (1200 flyers)">+1 box</button>
+        )}
+      </div>
       <input name="date" type="date" defaultValue={today} className="input" />
       <input name="note" placeholder="Note (optional)" className="input" />
       <button className="btn sm:col-span-3" disabled={pending}>Save</button>

@@ -28,10 +28,12 @@ type FC = GeoJSON.FeatureCollection;
 const empty: FC = { type: 'FeatureCollection', features: [] };
 
 export default function SuburbMap({
-  suburbs, coverage, selectedId, onSelect, fit = false, className = '',
+  suburbs, coverage, selectedId, onSelect, fit = false, focus, className = '',
 }: {
   suburbs: FC; coverage?: FC | null; selectedId?: number | null;
   onSelect?: (id: number | null) => void; fit?: boolean; className?: string;
+  /** Features to zoom to (e.g. search result or a suburb opened by link). */
+  focus?: FC | null;
 }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<MLMap | null>(null);
@@ -63,6 +65,11 @@ export default function SuburbMap({
         paint: { 'text-color': '#0f172a', 'text-halo-color': '#fff', 'text-halo-width': 1.2 } });
       m.addLayer({ id: 'cov', type: 'line', source: 'coverage',
         paint: { 'line-color': '#dc2626', 'line-width': 4, 'line-opacity': 0.8 } });
+      // Walk date along each walked route (spec: walked streets with date)
+      m.addLayer({ id: 'cov-date', type: 'symbol', source: 'coverage', minzoom: 13,
+        layout: { 'symbol-placement': 'line', 'text-field': ['coalesce', ['get', 'walked_on'], ''], 'text-size': 11,
+                  'text-font': ['Open Sans Semibold'], 'symbol-spacing': 250 },
+        paint: { 'text-color': '#991b1b', 'text-halo-color': '#fff', 'text-halo-width': 1.5 } });
       m.on('click', 'sub-fill', (e) => onSelectRef.current?.(Number(e.features?.[0]?.id)));
       m.on('mouseenter', 'sub-fill', () => (m.getCanvas().style.cursor = 'pointer'));
       m.on('mouseleave', 'sub-fill', () => (m.getCanvas().style.cursor = ''));
@@ -85,6 +92,13 @@ export default function SuburbMap({
     };
     if (ready) apply();
   }, [suburbs, fit, ready]);
+
+  useEffect(() => {
+    const m = map.current; if (!m || !ready || !focus?.features.length) return;
+    const b = new maplibregl.LngLatBounds();
+    focus.features.forEach((f) => walk(f.geometry, (c) => b.extend(c as [number, number])));
+    m.fitBounds(b, { padding: 60, maxZoom: 14, duration: 600 });
+  }, [focus, ready]);
 
   useEffect(() => {
     const m = map.current; if (!m) return;
