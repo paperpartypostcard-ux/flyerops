@@ -18,6 +18,19 @@ export const STATUS_LABELS: Record<string, string> = {
   excluded: 'Excluded',
 };
 
+const FALLBACK_STYLE: maplibregl.StyleSpecification = {
+  version: 8,
+  glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
+  sources: {
+    carto: {
+      type: 'raster', tileSize: 256,
+      tiles: ['a', 'b', 'c', 'd'].map((s) => `https://${s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png`),
+      attribution: '© OpenStreetMap contributors © CARTO',
+    },
+  },
+  layers: [{ id: 'carto', type: 'raster', source: 'carto' }],
+};
+
 type FC = GeoJSON.FeatureCollection;
 const empty: FC = { type: 'FeatureCollection', features: [] };
 
@@ -39,6 +52,17 @@ export default function SuburbMap({
       style: 'https://tiles.openfreemap.org/styles/positron',
       center: [144.96, -37.81], zoom: 9.5,
     });
+    // Fallback basemap if OpenFreeMap style can't be loaded
+    let fellBack = false;
+    const fallback = () => {
+      if (fellBack || m.isStyleLoaded()) return;
+      fellBack = true;
+      console.warn('Map style failed, using CARTO fallback');
+      m.setStyle(FALLBACK_STYLE);
+    };
+    m.on('error', (e) => { console.error('map error', e?.error); fallback(); });
+    const t = setTimeout(fallback, 8000);
+    m.once('load', () => clearTimeout(t));
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     m.addControl(new maplibregl.GeolocateControl({}), 'top-right');
     m.on('load', () => {
