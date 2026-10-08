@@ -18,17 +18,19 @@ export const STATUS_LABELS: Record<string, string> = {
   excluded: 'Excluded',
 };
 
-const FALLBACK_STYLE: maplibregl.StyleSpecification = {
+const BASE_STYLE: maplibregl.StyleSpecification = {
   version: 8,
-  glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
+  glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
   sources: {
-    carto: {
-      type: 'raster', tileSize: 256,
-      tiles: ['a', 'b', 'c', 'd'].map((s) => `https://${s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png`),
-      attribution: '© OpenStreetMap contributors © CARTO',
+    osm: {
+      type: 'raster', tileSize: 256, maxzoom: 19,
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      attribution: '© OpenStreetMap contributors',
     },
   },
-  layers: [{ id: 'carto', type: 'raster', source: 'carto' }],
+  layers: [
+    { id: 'osm', type: 'raster', source: 'osm', paint: { 'raster-saturation': -0.6, 'raster-opacity': 0.9 } },
+  ],
 };
 
 type FC = GeoJSON.FeatureCollection;
@@ -49,20 +51,9 @@ export default function SuburbMap({
   useEffect(() => {
     const m = new maplibregl.Map({
       container: el.current!,
-      style: 'https://tiles.openfreemap.org/styles/positron',
+      style: BASE_STYLE,
       center: [144.96, -37.81], zoom: 9.5,
     });
-    // Fallback basemap if OpenFreeMap style can't be loaded
-    let fellBack = false;
-    const fallback = () => {
-      if (fellBack || m.isStyleLoaded()) return;
-      fellBack = true;
-      console.warn('Map style failed, using CARTO fallback');
-      m.setStyle(FALLBACK_STYLE);
-    };
-    m.on('error', (e) => { console.error('map error', e?.error); fallback(); });
-    const t = setTimeout(fallback, 8000);
-    m.once('load', () => clearTimeout(t));
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     m.addControl(new maplibregl.GeolocateControl({}), 'top-right');
     m.on('load', () => {
@@ -76,7 +67,7 @@ export default function SuburbMap({
         paint: { 'line-color': ['case', ['boolean', ['feature-state', 'sel'], false], '#0f172a', '#475569'],
                  'line-width': ['case', ['boolean', ['feature-state', 'sel'], false], 2.5, 0.6] } });
       m.addLayer({ id: 'sub-label', type: 'symbol', source: 'suburbs', minzoom: 11,
-        layout: { 'text-field': ['get', 'name'], 'text-size': 11 },
+        layout: { 'text-field': ['get', 'name'], 'text-size': 11, 'text-font': ['Open Sans Semibold'] },
         paint: { 'text-color': '#0f172a', 'text-halo-color': '#fff', 'text-halo-width': 1.2 } });
       m.addLayer({ id: 'cov', type: 'line', source: 'coverage',
         paint: { 'line-color': '#dc2626', 'line-width': 4, 'line-opacity': 0.8 } });
