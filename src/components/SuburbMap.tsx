@@ -35,7 +35,7 @@ export default function SuburbMap({
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     m.addControl(new maplibregl.GeolocateControl({}), 'top-right');
     m.on('error', (e) => console.error('map error', e?.error ?? e));
-    m.on('load', () => {
+    m.once('style.load', () => {
       m.addSource('suburbs', { type: 'geojson', data: empty, promoteId: 'id' });
       m.addSource('coverage', { type: 'geojson', data: empty });
       const color: maplibregl.ExpressionSpecification =
