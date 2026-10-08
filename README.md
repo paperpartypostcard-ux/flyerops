@@ -10,6 +10,8 @@
 | `/login` | все | вход по email + пароль |
 | `/map` | owner, manager | карта всех suburbs с цветом статуса, поиск/фильтр, карточка района (жилища, цикл, последняя раздача, следующая допустимая дата, кто раздаёт), назначение раздатчика + компании, передача района другому, «завершено/отмена», настройки района (цикл 3/4 мес., ручная правка числа жилищ, исключение), красные линии — пройденные маршруты текущего цикла |
 | `/walkers` | owner, manager | список раздатчиков со статистикой (листовки, часы, листовок/час, на руках), создание аккаунтов, деактивация |
+| `/stock` | owner, manager | склад листовок по компаниям: приход, выдача раздатчику, возврат, корректировка; остатки на складе и на руках; журнал движений. Выдать больше, чем на складе, или принять возврат больше, чем на руках, база не даст |
+| `/checks` | owner, manager | журнал проверок раздатчиков (видеозвонок / лично, pass/fail, заметки), процент успешных по каждому |
 | `/me` | walker | только свои районы на карте + что уже пройдено (без имён других), отчёт о прогулке: дата, листовки, часы, GPX-файл из Map My Walk, история своих прогулок, остаток листовок на руках |
 
 Правила в базе (не обходятся из интерфейса):
@@ -18,13 +20,13 @@
 - walker видит только своё (проверено тестом `supabase/tests/rls_test.sql`);
 - manager не может создавать/менять staff-аккаунты, только owner.
 
-Следующие итерации: учёт листовок (экран склада), журнал видеопроверок, dashboard, подсветка пройденных **улиц** (OSM), экспорт, API Map My Walk.
+Следующие итерации: dashboard, подсветка пройденных **улиц** (OSM), экспорт, API Map My Walk.
 
 ## Запуск — шаг за шагом
 
 ### 1. Supabase (аккаунт клиента)
 1. https://supabase.com → New project, **Region: Sydney (ap-southeast-2)**.
-2. SQL Editor → вставить и выполнить `supabase/migrations/0001_init.sql`.
+2. SQL Editor → по очереди выполнить `supabase/migrations/0001_init.sql`, затем `0002_stock_checks.sql`.
 3. Authentication → Sign In / Providers → Email: **выключить «Allow new users to sign up»** (аккаунты создаёт только менеджер).
 4. Project Settings → API: скопировать URL, `anon` key, `service_role` key.
 
@@ -63,6 +65,10 @@ Vercel → Import GitHub repo → Environment Variables (те же три клю
 Нужен локальный Postgres с PostGIS:
 ```bash
 createdb flyer_test
-psql -d flyer_test -f supabase/tests/supabase_shim.sql -f supabase/migrations/0001_init.sql -f supabase/tests/rls_test.sql
+psql -d flyer_test -f supabase/tests/supabase_shim.sql -f supabase/migrations/0001_init.sql \
+  -f supabase/migrations/0002_stock_checks.sql -f supabase/tests/rls_test.sql
+createdb flyer_test2
+psql -d flyer_test2 -f supabase/tests/supabase_shim.sql -f supabase/migrations/0001_init.sql \
+  -f supabase/migrations/0002_stock_checks.sql -f supabase/tests/stock_checks_test.sql
 ```
-Должно закончиться `ALL TESTS PASSED`.
+Должно закончиться `ALL TESTS PASSED` и `ITERATION 2 TESTS PASSED`.
