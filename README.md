@@ -8,6 +8,7 @@
 | Экран | Кто | Что делает |
 |---|---|---|
 | `/login` | все | вход по email + пароль |
+| `/dashboard` | owner, manager | сводка за 7/30/90 дней: листовки (и сравнение с прошлым периодом), часы, листовок/час, районы, склад и на руках, проверки; график по дням; районы по статусам; таблицы по компаниям и раздатчикам. Стартовая страница для staff |
 | `/map` | owner, manager | карта всех suburbs с цветом статуса, поиск/фильтр, карточка района (жилища, цикл, последняя раздача, следующая допустимая дата, кто раздаёт), назначение раздатчика + компании, передача района другому, «завершено/отмена», настройки района (цикл 3/4 мес., ручная правка числа жилищ, исключение), красные линии — пройденные маршруты текущего цикла |
 | `/walkers` | owner, manager | список раздатчиков со статистикой (листовки, часы, листовок/час, на руках), создание аккаунтов, деактивация |
 | `/stock` | owner, manager | склад листовок по компаниям: приход, выдача раздатчику, возврат, корректировка; остатки на складе и на руках; журнал движений. Выдать больше, чем на складе, или принять возврат больше, чем на руках, база не даст |
@@ -20,13 +21,13 @@
 - walker видит только своё (проверено тестом `supabase/tests/rls_test.sql`);
 - manager не может создавать/менять staff-аккаунты, только owner.
 
-Следующие итерации: dashboard, подсветка пройденных **улиц** (OSM), экспорт, API Map My Walk.
+Следующие итерации: подсветка пройденных **улиц** (OSM), экспорт, API Map My Walk.
 
 ## Запуск — шаг за шагом
 
 ### 1. Supabase (аккаунт клиента)
 1. https://supabase.com → New project, **Region: Sydney (ap-southeast-2)**.
-2. SQL Editor → по очереди выполнить `supabase/migrations/0001_init.sql`, затем `0002_stock_checks.sql`.
+2. SQL Editor → по очереди выполнить `supabase/migrations/0001_init.sql`, затем `0002_stock_checks.sql` и `0003_dashboard.sql`.
 3. Authentication → Sign In / Providers → Email: **выключить «Allow new users to sign up»** (аккаунты создаёт только менеджер).
 4. Project Settings → API: скопировать URL, `anon` key, `service_role` key.
 
@@ -71,4 +72,5 @@ createdb flyer_test2
 psql -d flyer_test2 -f supabase/tests/supabase_shim.sql -f supabase/migrations/0001_init.sql \
   -f supabase/migrations/0002_stock_checks.sql -f supabase/tests/stock_checks_test.sql
 ```
-Должно закончиться `ALL TESTS PASSED` и `ITERATION 2 TESTS PASSED`.
+Для дашборда аналогично с `0003_dashboard.sql` и `supabase/tests/dashboard_test.sql`.
+Должно закончиться `ALL TESTS PASSED`, `ITERATION 2 TESTS PASSED`, `ITERATION 3 TESTS PASSED`.

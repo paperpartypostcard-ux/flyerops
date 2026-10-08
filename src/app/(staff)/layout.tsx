@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/supabase/server';
 import { signOut } from '@/app/actions';
 
-const NAV = [['/map', 'Map'], ['/walkers', 'Walkers'], ['/stock', 'Stock'], ['/checks', 'Checks']];
+const NAV = [['/dashboard', 'Dashboard'], ['/map', 'Map'], ['/walkers', 'Walkers'], ['/stock', 'Stock'], ['/checks', 'Checks']];
 
 export default async function StaffLayout({ children }: { children: React.ReactNode }) {
   const me = await requireUser(true);

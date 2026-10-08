@@ -3,20 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 type GeoJSONSource = maplibregl.GeoJSONSource; type MLMap = maplibregl.Map;
 
-export const STATUS_COLORS: Record<string, string> = {
-  available: '#22c55e',
-  planned: '#f59e0b',
-  in_progress: '#3b82f6',
-  covered: '#94a3b8',
-  excluded: '#334155',
-};
-export const STATUS_LABELS: Record<string, string> = {
-  available: 'Available',
-  planned: 'Planned',
-  in_progress: 'In progress',
-  covered: 'Covered (cycle)',
-  excluded: 'Excluded',
-};
+import { STATUS_COLORS, STATUS_LABELS } from '@/lib/status';
+export { STATUS_COLORS, STATUS_LABELS };
 
 const BASE_STYLE: maplibregl.StyleSpecification = {
   version: 8,
