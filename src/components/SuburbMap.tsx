@@ -65,6 +65,7 @@ export default function SuburbMap({
       setReady(true);
     });
     map.current = m;
+    (window as unknown as { __flyerMap?: MLMap }).__flyerMap = m;
     return () => m.remove();
   }, []);
 
