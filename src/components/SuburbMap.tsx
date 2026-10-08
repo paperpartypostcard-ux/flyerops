@@ -3,6 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 type GeoJSONSource = maplibregl.GeoJSONSource; type MLMap = maplibregl.Map;
 
+// Worker is served from /public (copied by scripts/copy-maplibre-worker.mjs before build)
+maplibregl.setWorkerUrl('/maplibre-gl-worker.mjs');
+
 import { STATUS_COLORS, STATUS_LABELS } from '@/lib/status';
 export { STATUS_COLORS, STATUS_LABELS };
 
@@ -44,6 +47,7 @@ export default function SuburbMap({
     });
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     m.addControl(new maplibregl.GeolocateControl({}), 'top-right');
+    m.on('error', (e) => console.error('map error', e?.error ?? e));
     m.on('load', () => {
       m.addSource('suburbs', { type: 'geojson', data: empty, promoteId: 'id' });
       m.addSource('coverage', { type: 'geojson', data: empty });
@@ -65,7 +69,6 @@ export default function SuburbMap({
       setReady(true);
     });
     map.current = m;
-    (window as unknown as { __flyerMap?: MLMap }).__flyerMap = m;
     return () => m.remove();
   }, []);
 
