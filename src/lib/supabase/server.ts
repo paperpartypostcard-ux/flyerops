@@ -28,8 +28,9 @@ export async function requireUser(staffOnly = false): Promise<Me> {
   const sb = await supabaseServer();
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect('/login');
-  const { data: me } = await sb.from('profiles').select('id, full_name, role').eq('id', user.id).single();
+  const { data: me } = await sb.from('profiles').select('id, full_name, role, status').eq('id', user.id).single();
   if (!me) redirect('/login?e=noprofile');
+  if (me.status === 'inactive') redirect('/login?e=inactive');
   if (staffOnly && me.role === 'walker') redirect('/me');
   return me as Me;
 }

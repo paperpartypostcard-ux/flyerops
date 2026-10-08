@@ -64,3 +64,15 @@ end $$;
 
 reset role;
 select 'ITERATION 4 TESTS PASSED';
+
+-- deactivated walker can't report
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b';
+update profiles set status = 'inactive' where id = '00000000-0000-0000-0000-000000000001';
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+do $$ begin
+  perform submit_drop((select id from assignments where suburb_id=3), current_date, 10, 1);
+  raise exception 'FAIL: inactive walker reported';
+exception when others then if sqlerrm like 'FAIL%' then raise; end if; end $$;
+reset role;
+select 'INACTIVE GUARD PASSED';

@@ -28,7 +28,7 @@
 
 ### 1. Supabase (аккаунт клиента)
 1. https://supabase.com → New project, **Region: Sydney (ap-southeast-2)**.
-2. SQL Editor → по очереди выполнить `supabase/migrations/0001_init.sql`, затем `0002_stock_checks.sql`, `0003_dashboard.sql`, `0004_payroll_recommend.sql`.
+2. SQL Editor → по очереди выполнить `supabase/migrations/0001_init.sql`, затем `0002_stock_checks.sql`, `0003_dashboard.sql`, `0004_payroll_recommend.sql`, `0005_inactive_guard.sql`.
 3. Authentication → Sign In / Providers → Email: **выключить «Allow new users to sign up»** (аккаунты создаёт только менеджер).
 4. Project Settings → API: скопировать URL, `anon` key, `service_role` key.
 
